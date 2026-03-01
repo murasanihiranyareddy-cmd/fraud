@@ -1,0 +1,1478 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SmartFraudDetector — Code Files</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0d14;
+    --surface: #111520;
+    --surface2: #161b2e;
+    --border: #1e2640;
+    --accent: #00e5ff;
+    --accent2: #7b61ff;
+    --accent3: #ff4d6d;
+    --green: #00ff88;
+    --text: #e8eaf6;
+    --muted: #5c6898;
+    --card-glow: rgba(0,229,255,0.06);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Syne', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Animated grid background */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(0,229,255,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,229,255,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* Radial glow */
+  body::after {
+    content: '';
+    position: fixed;
+    top: -30%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 800px;
+    height: 600px;
+    background: radial-gradient(ellipse, rgba(123,97,255,0.12) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .wrapper {
+    position: relative;
+    z-index: 1;
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 24px 80px;
+  }
+
+  /* HEADER */
+  header {
+    padding: 60px 0 48px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    animation: fadeDown 0.7s ease both;
+  }
+
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(0,229,255,0.08);
+    border: 1px solid rgba(0,229,255,0.2);
+    border-radius: 999px;
+    padding: 6px 16px;
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    color: var(--accent);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    width: fit-content;
+  }
+
+  .badge::before { content: '◉'; font-size: 8px; animation: pulse 2s infinite; }
+
+  h1 {
+    font-size: clamp(36px, 6vw, 72px);
+    font-weight: 800;
+    line-height: 1;
+    letter-spacing: -0.02em;
+  }
+
+  h1 .shield { color: var(--accent); }
+  h1 .fraud { color: var(--accent3); }
+
+  .subtitle {
+    font-family: 'Space Mono', monospace;
+    font-size: 13px;
+    color: var(--muted);
+    letter-spacing: 0.05em;
+    max-width: 500px;
+    line-height: 1.7;
+  }
+
+  .subtitle span { color: var(--accent); }
+
+  .header-meta {
+    display: flex;
+    gap: 24px;
+    flex-wrap: wrap;
+    margin-top: 8px;
+  }
+
+  .meta-pill {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    font-family: 'Space Mono', monospace;
+    color: var(--muted);
+  }
+
+  .meta-pill .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); flex-shrink: 0; }
+
+  /* DOWNLOAD ALL BUTTON */
+  .top-actions {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 40px;
+    animation: fadeUp 0.6s 0.2s ease both;
+  }
+
+  .btn-primary {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    background: linear-gradient(135deg, var(--accent2), var(--accent));
+    color: #000;
+    font-family: 'Space Mono', monospace;
+    font-size: 13px;
+    font-weight: 700;
+    padding: 14px 28px;
+    border-radius: 8px;
+    cursor: pointer;
+    border: none;
+    transition: transform 0.2s, box-shadow 0.2s;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+  }
+
+  .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 30px rgba(0,229,255,0.3);
+  }
+
+  .btn-secondary {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    background: transparent;
+    color: var(--text);
+    font-family: 'Space Mono', monospace;
+    font-size: 13px;
+    padding: 14px 24px;
+    border-radius: 8px;
+    cursor: pointer;
+    border: 1px solid var(--border);
+    transition: border-color 0.2s, background 0.2s;
+    letter-spacing: 0.03em;
+  }
+
+  .btn-secondary:hover { border-color: var(--accent); background: rgba(0,229,255,0.05); }
+
+  /* SECTION TITLE */
+  .section-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    color: var(--accent2);
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .section-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(to right, var(--border), transparent);
+  }
+
+  /* FILE GRID */
+  .file-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 16px;
+    margin-bottom: 48px;
+  }
+
+  .file-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+    transition: border-color 0.25s, transform 0.25s, box-shadow 0.25s;
+    cursor: default;
+    animation: fadeUp 0.5s ease both;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .file-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--accent2), var(--accent));
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.3s ease;
+  }
+
+  .file-card:hover {
+    border-color: rgba(0,229,255,0.3);
+    transform: translateY(-2px);
+    box-shadow: 0 12px 40px rgba(0,0,0,0.4), 0 0 0 1px rgba(0,229,255,0.05);
+  }
+
+  .file-card:hover::before { transform: scaleX(1); }
+
+  .card-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 14px;
+  }
+
+  .file-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+  }
+
+  .icon-kotlin { background: rgba(123,97,255,0.15); }
+  .icon-gradle { background: rgba(0,229,255,0.1); }
+  .icon-xml { background: rgba(255,77,109,0.12); }
+  .icon-json { background: rgba(0,255,136,0.1); }
+  .icon-pro { background: rgba(255,200,0,0.1); }
+
+  .file-name {
+    font-family: 'Space Mono', monospace;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text);
+    word-break: break-all;
+    line-height: 1.4;
+  }
+
+  .file-path {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    margin-top: 2px;
+    line-height: 1.5;
+    word-break: break-all;
+  }
+
+  .file-desc {
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 1.6;
+    margin-bottom: 16px;
+  }
+
+  .card-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+
+  .file-tag {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    padding: 3px 10px;
+    border-radius: 999px;
+    border: 1px solid;
+  }
+
+  .tag-kt { color: #bf8fff; border-color: rgba(191,143,255,0.25); background: rgba(191,143,255,0.06); }
+  .tag-gradle { color: var(--accent); border-color: rgba(0,229,255,0.2); background: rgba(0,229,255,0.05); }
+  .tag-xml { color: var(--accent3); border-color: rgba(255,77,109,0.2); background: rgba(255,77,109,0.05); }
+  .tag-json { color: var(--green); border-color: rgba(0,255,136,0.2); background: rgba(0,255,136,0.05); }
+  .tag-pro { color: #ffc800; border-color: rgba(255,200,0,0.2); background: rgba(255,200,0,0.05); }
+
+  .copy-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(0,229,255,0.08);
+    border: 1px solid rgba(0,229,255,0.2);
+    color: var(--accent);
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    padding: 6px 14px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.2s;
+    white-space: nowrap;
+  }
+
+  .copy-btn:hover { background: rgba(0,229,255,0.15); }
+  .copy-btn.copied { color: var(--green); border-color: rgba(0,255,136,0.3); background: rgba(0,255,136,0.08); }
+
+  /* CODE MODAL */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(5,7,15,0.92);
+    z-index: 1000;
+    backdrop-filter: blur(4px);
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+
+  .modal-overlay.open { display: flex; }
+
+  .modal {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    width: 100%;
+    max-width: 800px;
+    max-height: 85vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    animation: modalIn 0.25s ease;
+  }
+
+  .modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+
+  .modal-title {
+    font-family: 'Space Mono', monospace;
+    font-size: 13px;
+    color: var(--accent);
+  }
+
+  .modal-actions {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+
+  .modal-close {
+    background: rgba(255,77,109,0.1);
+    border: 1px solid rgba(255,77,109,0.2);
+    color: var(--accent3);
+    font-size: 16px;
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s;
+  }
+
+  .modal-close:hover { background: rgba(255,77,109,0.2); }
+
+  .modal-body {
+    overflow-y: auto;
+    flex: 1;
+  }
+
+  pre {
+    font-family: 'Space Mono', monospace;
+    font-size: 12px;
+    line-height: 1.7;
+    color: #c9d1d9;
+    padding: 24px;
+    white-space: pre-wrap;
+    word-break: break-word;
+    tab-size: 2;
+  }
+
+  /* Keywords coloring — simple highlight */
+  .kw { color: #ff79c6; }
+  .fn { color: #50fa7b; }
+  .str { color: #f1fa8c; }
+  .cm { color: #6272a4; font-style: italic; }
+  .num { color: #bd93f9; }
+
+  /* STATS BAR */
+  .stats-bar {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 40px;
+    animation: fadeUp 0.5s 0.1s ease both;
+  }
+
+  .stat {
+    background: var(--surface);
+    padding: 20px 24px;
+    text-align: center;
+  }
+
+  .stat-val {
+    font-size: 28px;
+    font-weight: 800;
+    color: var(--accent);
+    display: block;
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+
+  .stat-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+
+  /* ANIMATIONS */
+  @keyframes fadeDown { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: none; } }
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: none; } }
+  @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
+  @keyframes modalIn { from { opacity: 0; transform: scale(0.95) translateY(10px); } to { opacity: 1; transform: none; } }
+
+  @media (max-width: 600px) {
+    .stats-bar { grid-template-columns: repeat(2, 1fr); }
+    .file-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="wrapper">
+
+  <!-- HEADER -->
+  <header>
+    <div class="badge">GDG Hackathon Solasta 2026 · IIITDM Kurnool</div>
+    <h1>
+      <span class="shield">Smart</span><span class="fraud">Fraud</span>Detector
+    </h1>
+    <p class="subtitle">
+      Android app using <span>TFLite ML models</span> for real-time SMS, call & URL fraud detection. All source files below — click any card to preview, then copy or download.
+    </p>
+    <div class="header-meta">
+      <span class="meta-pill"><span class="dot"></span>Kotlin · Jetpack Compose</span>
+      <span class="meta-pill"><span class="dot" style="background:var(--accent2)"></span>TensorFlow Lite</span>
+      <span class="meta-pill"><span class="dot" style="background:var(--accent3)"></span>Hilt · Room · SQLCipher</span>
+    </div>
+  </header>
+
+  <!-- STATS -->
+  <div class="stats-bar">
+    <div class="stat"><span class="stat-val">14</span><span class="stat-label">Files</span></div>
+    <div class="stat"><span class="stat-val">8</span><span class="stat-label">Kotlin Files</span></div>
+    <div class="stat"><span class="stat-val">3</span><span class="stat-label">Config Files</span></div>
+    <div class="stat"><span class="stat-val">API 26+</span><span class="stat-label">Min Android</span></div>
+  </div>
+
+  <!-- ACTIONS -->
+  <div class="top-actions">
+    <button class="btn-primary" onclick="downloadAll()">⬇ Download All Files</button>
+    <button class="btn-secondary" onclick="copyStructure()">⎘ Copy Structure</button>
+  </div>
+
+  <!-- KOTLIN FILES -->
+  <div class="section-label">Kotlin Source Files</div>
+  <div class="file-grid" id="kotlin-grid"></div>
+
+  <!-- CONFIG FILES -->
+  <div class="section-label">Build & Config Files</div>
+  <div class="file-grid" id="config-grid"></div>
+
+  <!-- ASSET FILES -->
+  <div class="section-label">Asset & Manifest Files</div>
+  <div class="file-grid" id="asset-grid"></div>
+
+</div>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modal" onclick="closeModal(event)">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title" id="modal-title">filename</span>
+      <div class="modal-actions">
+        <button class="copy-btn" id="modal-copy-btn" onclick="copyModalCode()">⎘ Copy</button>
+        <button class="copy-btn" style="color:var(--green);border-color:rgba(0,255,136,0.3);background:rgba(0,255,136,0.05);" onclick="downloadCurrent()">⬇ Download</button>
+        <button class="modal-close" onclick="document.getElementById('modal').classList.remove('open')">✕</button>
+      </div>
+    </div>
+    <div class="modal-body">
+      <pre id="modal-code"></pre>
+    </div>
+  </div>
+</div>
+
+<script>
+// ─── FILE DATA ────────────────────────────────────────────────────────────────
+
+const kotlinFiles = [
+  {
+    name: "MainActivity.kt",
+    path: "app/src/main/java/com/fraud_detector/",
+    desc: "Entry point. Sets up Hilt, requests runtime permissions, and launches Compose navigation host.",
+    tag: "kt",
+    icon: "icon-kotlin",
+    emoji: "🚀",
+    code: `package com.fraud_detector
+
+import android.Manifest
+import android.os.Bundle
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.runtime.*
+import com.fraud_detector.ui.NavGraph
+import com.fraud_detector.ui.theme.FraudDetectorTheme
+import dagger.hilt.android.AndroidEntryPoint
+
+@AndroidEntryPoint
+class MainActivity : ComponentActivity() {
+
+    private val permissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestMultiplePermissions()
+    ) { results ->
+        // permissions granted map — handle in ViewModel
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        requestPermissions()
+        setContent {
+            FraudDetectorTheme {
+                NavGraph()
+            }
+        }
+    }
+
+    private fun requestPermissions() {
+        permissionLauncher.launch(
+            arrayOf(
+                Manifest.permission.READ_SMS,
+                Manifest.permission.RECEIVE_SMS,
+                Manifest.permission.READ_CALL_LOG,
+                Manifest.permission.POST_NOTIFICATIONS
+            )
+        )
+    }
+}`
+  },
+  {
+    name: "ThreatDetectionEngine.kt",
+    path: "app/src/main/java/com/fraud_detector/detection/",
+    desc: "Core ML inference engine. Runs SMS, URL, and call-fraud TFLite models, aggregates scores, and emits ThreatResult.",
+    tag: "kt",
+    icon: "icon-kotlin",
+    emoji: "🧠",
+    code: `package com.fraud_detector.detection
+
+import android.content.Context
+import com.fraud_detector.ml.TFLiteModelManager
+import com.fraud_detector.models.ThreatLevel
+import com.fraud_detector.models.ThreatResult
+import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import javax.inject.Inject
+import javax.inject.Singleton
+
+@Singleton
+class ThreatDetectionEngine @Inject constructor(
+    @ApplicationContext private val context: Context,
+    private val modelManager: TFLiteModelManager,
+    private val keywordAnalyzer: KeywordAnalyzer,
+    private val urlAnalyzer: UrlAnalyzer
+) {
+    suspend fun analyzeSms(sender: String, body: String): ThreatResult =
+        withContext(Dispatchers.Default) {
+            val mlScore = modelManager.runSmsModel(body)
+            val keywordScore = keywordAnalyzer.score(body)
+            val urlScore = body.extractUrls().maxOfOrNull { urlAnalyzer.score(it) } ?: 0f
+            val combined = (mlScore * 0.6f) + (keywordScore * 0.25f) + (urlScore * 0.15f)
+            ThreatResult(
+                sender = sender,
+                body = body,
+                score = combined,
+                level = when {
+                    combined >= 0.75f -> ThreatLevel.HIGH
+                    combined >= 0.45f -> ThreatLevel.MEDIUM
+                    else -> ThreatLevel.LOW
+                },
+                timestamp = System.currentTimeMillis()
+            )
+        }
+
+    suspend fun analyzeCall(number: String, duration: Long): ThreatResult =
+        withContext(Dispatchers.Default) {
+            val score = modelManager.runCallModel(number, duration)
+            ThreatResult(
+                sender = number,
+                body = "Incoming call — $duration s",
+                score = score,
+                level = if (score >= 0.7f) ThreatLevel.HIGH else ThreatLevel.LOW,
+                timestamp = System.currentTimeMillis()
+            )
+        }
+
+    private fun String.extractUrls(): List<String> =
+        Regex("""https?://[^\s]+""").findAll(this).map { it.value }.toList()
+}`
+  },
+  {
+    name: "TFLiteModelManager.kt",
+    path: "app/src/main/java/com/fraud_detector/ml/",
+    desc: "Loads and manages all three TFLite interpreters (SMS, Call, URL). Handles tokenization and tensor I/O.",
+    tag: "kt",
+    icon: "icon-kotlin",
+    emoji: "⚡",
+    code: `package com.fraud_detector.ml
+
+import android.content.Context
+import dagger.hilt.android.qualifiers.ApplicationContext
+import org.tensorflow.lite.Interpreter
+import java.io.FileInputStream
+import java.nio.ByteBuffer
+import java.nio.ByteOrder
+import java.nio.MappedByteBuffer
+import java.nio.channels.FileChannel
+import javax.inject.Inject
+import javax.inject.Singleton
+
+@Singleton
+class TFLiteModelManager @Inject constructor(
+    @ApplicationContext private val context: Context
+) {
+    private val smsInterpreter: Interpreter by lazy {
+        Interpreter(loadModel("models/sms_classifier.tflite"))
+    }
+    private val callInterpreter: Interpreter by lazy {
+        Interpreter(loadModel("models/call_fraud_detector.tflite"))
+    }
+    private val urlInterpreter: Interpreter by lazy {
+        Interpreter(loadModel("models/url_embedding_model.tflite"))
+    }
+
+    fun runSmsModel(text: String): Float {
+        val input = tokenize(text, 128)
+        val output = Array(1) { FloatArray(1) }
+        smsInterpreter.run(input, output)
+        return output[0][0]
+    }
+
+    fun runCallModel(number: String, duration: Long): Float {
+        val input = floatArrayOf(
+            number.length.toFloat(),
+            number.filter { it == '#' || it == '*' }.length.toFloat(),
+            duration.toFloat()
+        )
+        val buf = ByteBuffer.allocateDirect(4 * 3).apply {
+            order(ByteOrder.nativeOrder())
+            input.forEach { putFloat(it) }
+            rewind()
+        }
+        val output = Array(1) { FloatArray(1) }
+        callInterpreter.run(buf, output)
+        return output[0][0]
+    }
+
+    fun runUrlModel(url: String): Float {
+        val input = tokenize(url, 64)
+        val output = Array(1) { FloatArray(1) }
+        urlInterpreter.run(input, output)
+        return output[0][0]
+    }
+
+    private fun tokenize(text: String, maxLen: Int): ByteBuffer {
+        val tokens = text.lowercase().split(" ")
+            .take(maxLen)
+            .map { it.hashCode() % 10000 }
+        val buf = ByteBuffer.allocateDirect(4 * maxLen).order(ByteOrder.nativeOrder())
+        repeat(maxLen) { i -> buf.putFloat(if (i < tokens.size) tokens[i].toFloat() else 0f) }
+        return buf.apply { rewind() }
+    }
+
+    private fun loadModel(assetPath: String): MappedByteBuffer {
+        val fd = context.assets.openFd(assetPath)
+        return FileInputStream(fd.fileDescriptor).channel
+            .map(FileChannel.MapMode.READ_ONLY, fd.startOffset, fd.declaredLength)
+    }
+}`
+  },
+  {
+    name: "SmsReceiver.kt",
+    path: "app/src/main/java/com/fraud_detector/receivers/",
+    desc: "BroadcastReceiver for incoming SMS. Extracts PDUs, triggers ThreatDetectionEngine, and fires notification.",
+    tag: "kt",
+    icon: "icon-kotlin",
+    emoji: "📩",
+    code: `package com.fraud_detector.receivers
+
+import android.content.BroadcastReceiver
+import android.content.Context
+import android.content.Intent
+import android.provider.Telephony
+import com.fraud_detector.detection.ThreatDetectionEngine
+import com.fraud_detector.models.ThreatLevel
+import com.fraud_detector.utils.NotificationHelper
+import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.*
+import javax.inject.Inject
+
+@AndroidEntryPoint
+class SmsReceiver : BroadcastReceiver() {
+
+    @Inject lateinit var detectionEngine: ThreatDetectionEngine
+    @Inject lateinit var notificationHelper: NotificationHelper
+
+    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
+
+    override fun onReceive(context: Context, intent: Intent) {
+        if (intent.action != Telephony.Sms.Intents.SMS_RECEIVED_ACTION) return
+        val messages = Telephony.Sms.Intents.getMessagesFromIntent(intent)
+        val sender = messages.firstOrNull()?.originatingAddress ?: return
+        val body = messages.joinToString("") { it.messageBody }
+
+        val pending = goAsync()
+        scope.launch {
+            try {
+                val result = detectionEngine.analyzeSms(sender, body)
+                if (result.level != ThreatLevel.LOW) {
+                    notificationHelper.sendThreatAlert(result)
+                }
+            } finally {
+                pending.finish()
+            }
+        }
+    }
+}`
+  },
+  {
+    name: "DashboardScreen.kt",
+    path: "app/src/main/java/com/fraud_detector/ui/",
+    desc: "Jetpack Compose dashboard. Shows live threat stats, risk gauge, and recent detections using Material 3.",
+    tag: "kt",
+    icon: "icon-kotlin",
+    emoji: "📊",
+    code: `package com.fraud_detector.ui
+
+import androidx.compose.animation.core.*
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
+import com.fraud_detector.models.ThreatLevel
+import com.fraud_detector.viewmodels.DashboardViewModel
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun DashboardScreen(viewModel: DashboardViewModel = hiltViewModel()) {
+    val uiState by viewModel.uiState.collectAsState()
+
+    Scaffold(
+        topBar = {
+            TopAppBar(title = { Text("SmartFraud Detector") })
+        }
+    ) { padding ->
+        LazyColumn(
+            modifier = Modifier.fillMaxSize().padding(padding),
+            contentPadding = PaddingValues(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            item { StatsRow(uiState.highCount, uiState.medCount, uiState.totalScanned) }
+            item { ThreatGauge(score = uiState.riskScore) }
+            item {
+                Text("Recent Threats", style = MaterialTheme.typography.titleMedium,
+                    modifier = Modifier.padding(top = 8.dp))
+            }
+            items(uiState.recentThreats) { threat ->
+                ThreatCard(threat)
+            }
+        }
+    }
+}
+
+@Composable
+fun ThreatCard(threat: com.fraud_detector.models.ThreatResult) {
+    val color = when (threat.level) {
+        ThreatLevel.HIGH -> MaterialTheme.colorScheme.error
+        ThreatLevel.MEDIUM -> Color(0xFFFF9800)
+        ThreatLevel.LOW -> MaterialTheme.colorScheme.primary
+    }
+    Card(modifier = Modifier.fillMaxWidth()) {
+        Row(Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
+            Box(Modifier.size(10.dp).background(color, shape = MaterialTheme.shapes.small))
+            Spacer(Modifier.width(12.dp))
+            Column(Modifier.weight(1f)) {
+                Text(threat.sender, style = MaterialTheme.typography.bodyMedium)
+                Text(threat.body.take(60) + "…", style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+            Text("%.0f%%".format(threat.score * 100), color = color,
+                style = MaterialTheme.typography.labelLarge)
+        }
+    }
+}
+
+@Composable
+fun StatsRow(high: Int, med: Int, total: Int) {
+    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        StatChip("High", high, MaterialTheme.colorScheme.error, Modifier.weight(1f))
+        StatChip("Medium", med, Color(0xFFFF9800), Modifier.weight(1f))
+        StatChip("Scanned", total, MaterialTheme.colorScheme.primary, Modifier.weight(1f))
+    }
+}
+
+@Composable
+fun StatChip(label: String, value: Int, color: Color, modifier: Modifier) {
+    Card(modifier = modifier) {
+        Column(Modifier.padding(12.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+            Text("$value", style = MaterialTheme.typography.headlineMedium, color = color)
+            Text(label, style = MaterialTheme.typography.labelSmall)
+        }
+    }
+}
+
+@Composable
+fun ThreatGauge(score: Float) {
+    val anim by animateFloatAsState(score, animationSpec = tween(800))
+    Card(Modifier.fillMaxWidth()) {
+        Column(Modifier.padding(16.dp)) {
+            Text("Current Risk Score", style = MaterialTheme.typography.titleSmall)
+            Spacer(Modifier.height(8.dp))
+            LinearProgressIndicator(
+                progress = { anim },
+                modifier = Modifier.fillMaxWidth().height(12.dp),
+                color = when {
+                    score >= 0.75f -> MaterialTheme.colorScheme.error
+                    score >= 0.45f -> Color(0xFFFF9800)
+                    else -> MaterialTheme.colorScheme.primary
+                }
+            )
+            Text("%.0f%% risk".format(score * 100),
+                style = MaterialTheme.typography.bodySmall,
+                modifier = Modifier.padding(top = 4.dp))
+        }
+    }
+}`
+  },
+  {
+    name: "AppDatabase.kt",
+    path: "app/src/main/java/com/fraud_detector/database/",
+    desc: "Room database with SQLCipher encryption. Contains ThreatDao and migration strategy.",
+    tag: "kt",
+    icon: "icon-kotlin",
+    emoji: "🗄️",
+    code: `package com.fraud_detector.database
+
+import androidx.room.*
+import com.fraud_detector.models.ThreatEntity
+import net.sqlcipher.database.SQLiteDatabase
+import net.sqlcipher.database.SupportFactory
+
+@Database(entities = [ThreatEntity::class], version = 1, exportSchema = false)
+abstract class AppDatabase : RoomDatabase() {
+    abstract fun threatDao(): ThreatDao
+
+    companion object {
+        fun build(context: android.content.Context): AppDatabase {
+            SQLiteDatabase.loadLibs(context)
+            val passphrase = SQLiteDatabase.getBytes("fraud_secure_key".toCharArray())
+            val factory = SupportFactory(passphrase)
+            return Room.databaseBuilder(context, AppDatabase::class.java, "fraud_db")
+                .openHelperFactory(factory)
+                .fallbackToDestructiveMigration()
+                .build()
+        }
+    }
+}
+
+@Dao
+interface ThreatDao {
+    @Query("SELECT * FROM threats ORDER BY timestamp DESC LIMIT 100")
+    fun getRecent(): kotlinx.coroutines.flow.Flow<List<ThreatEntity>>
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insert(threat: ThreatEntity)
+
+    @Query("SELECT COUNT(*) FROM threats WHERE level = 'HIGH'")
+    suspend fun countHigh(): Int
+
+    @Query("SELECT COUNT(*) FROM threats WHERE level = 'MEDIUM'")
+    suspend fun countMedium(): Int
+
+    @Query("DELETE FROM threats WHERE timestamp < :before")
+    suspend fun deleteOlderThan(before: Long)
+}`
+  },
+  {
+    name: "ThreatModels.kt",
+    path: "app/src/main/java/com/fraud_detector/models/",
+    desc: "Data classes and Room entities: ThreatResult, ThreatEntity, ThreatLevel enum.",
+    tag: "kt",
+    icon: "icon-kotlin",
+    emoji: "📦",
+    code: `package com.fraud_detector.models
+
+import androidx.room.Entity
+import androidx.room.PrimaryKey
+
+enum class ThreatLevel { LOW, MEDIUM, HIGH }
+
+data class ThreatResult(
+    val sender: String,
+    val body: String,
+    val score: Float,          // 0.0 – 1.0
+    val level: ThreatLevel,
+    val timestamp: Long
+)
+
+@Entity(tableName = "threats")
+data class ThreatEntity(
+    @PrimaryKey(autoGenerate = true) val id: Long = 0,
+    val sender: String,
+    val body: String,
+    val score: Float,
+    val level: String,         // stored as string for Room
+    val timestamp: Long
+)
+
+fun ThreatResult.toEntity() = ThreatEntity(
+    sender = sender, body = body, score = score,
+    level = level.name, timestamp = timestamp
+)
+
+fun ThreatEntity.toResult() = ThreatResult(
+    sender = sender, body = body, score = score,
+    level = ThreatLevel.valueOf(level), timestamp = timestamp
+)`
+  },
+  {
+    name: "AppModule.kt",
+    path: "app/src/main/java/com/fraud_detector/di/",
+    desc: "Hilt dependency injection module. Provides singleton instances of AppDatabase, TFLiteModelManager, and NotificationHelper.",
+    tag: "kt",
+    icon: "icon-kotlin",
+    emoji: "🔧",
+    code: `package com.fraud_detector.di
+
+import android.content.Context
+import com.fraud_detector.database.AppDatabase
+import com.fraud_detector.database.ThreatDao
+import com.fraud_detector.ml.TFLiteModelManager
+import com.fraud_detector.utils.NotificationHelper
+import dagger.Module
+import dagger.Provides
+import dagger.hilt.InstallIn
+import dagger.hilt.android.qualifiers.ApplicationContext
+import dagger.hilt.components.SingletonComponent
+import javax.inject.Singleton
+
+@Module
+@InstallIn(SingletonComponent::class)
+object AppModule {
+
+    @Provides
+    @Singleton
+    fun provideDatabase(@ApplicationContext ctx: Context): AppDatabase =
+        AppDatabase.build(ctx)
+
+    @Provides
+    @Singleton
+    fun provideThreatDao(db: AppDatabase): ThreatDao = db.threatDao()
+
+    @Provides
+    @Singleton
+    fun provideTFLiteModelManager(@ApplicationContext ctx: Context): TFLiteModelManager =
+        TFLiteModelManager(ctx)
+
+    @Provides
+    @Singleton
+    fun provideNotificationHelper(@ApplicationContext ctx: Context): NotificationHelper =
+        NotificationHelper(ctx)
+}`
+  }
+];
+
+const configFiles = [
+  {
+    name: "build.gradle.kts (app)",
+    path: "app/",
+    desc: "App-level Gradle config. Declares dependencies: TFLite, Room, Hilt, Compose, SQLCipher.",
+    tag: "gradle",
+    icon: "icon-gradle",
+    emoji: "⚙️",
+    code: `plugins {
+    alias(libs.plugins.android.application)
+    alias(libs.plugins.kotlin.android)
+    alias(libs.plugins.hilt)
+    id("kotlin-kapt")
+}
+
+android {
+    namespace = "com.fraud_detector"
+    compileSdk = 34
+
+    defaultConfig {
+        applicationId = "com.fraud_detector"
+        minSdk = 26
+        targetSdk = 34
+        versionCode = 1
+        versionName = "1.0.0"
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    buildTypes {
+        release {
+            isMinifyEnabled = true
+            isShrinkResources = true
+            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_11
+        targetCompatibility = JavaVersion.VERSION_11
+    }
+
+    kotlinOptions { jvmTarget = "11" }
+
+    buildFeatures { compose = true }
+    composeOptions { kotlinCompilerExtensionVersion = "1.5.4" }
+}
+
+dependencies {
+    // Compose BOM
+    val composeBom = platform("androidx.compose:compose-bom:2024.02.00")
+    implementation(composeBom)
+    implementation("androidx.compose.ui:ui")
+    implementation("androidx.compose.material3:material3")
+    implementation("androidx.compose.ui:ui-tooling-preview")
+    implementation("androidx.activity:activity-compose:1.8.2")
+    implementation("androidx.navigation:navigation-compose:2.7.6")
+    implementation("androidx.hilt:hilt-navigation-compose:1.1.0")
+
+    // Hilt
+    implementation("com.google.dagger:hilt-android:2.50")
+    kapt("com.google.dagger:hilt-compiler:2.50")
+
+    // TFLite
+    implementation("org.tensorflow:tensorflow-lite:2.14.0")
+    implementation("org.tensorflow:tensorflow-lite-support:0.4.4")
+    implementation("org.tensorflow:tensorflow-lite-gpu:2.14.0")
+
+    // Room + SQLCipher
+    implementation("androidx.room:room-runtime:2.6.1")
+    implementation("androidx.room:room-ktx:2.6.1")
+    kapt("androidx.room:room-compiler:2.6.1")
+    implementation("net.zetetic:android-database-sqlcipher:4.5.4")
+    implementation("androidx.sqlite:sqlite-ktx:2.4.0")
+
+    // Coroutines
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
+
+    // ViewModel
+    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.7.0")
+    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.7.0")
+
+    // Testing
+    testImplementation("junit:junit:4.13.2")
+    testImplementation("io.mockk:mockk:1.13.8")
+    androidTestImplementation("androidx.test.ext:junit:1.1.5")
+    androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
+    androidTestImplementation(composeBom)
+    androidTestImplementation("androidx.compose.ui:ui-test-junit4")
+    debugImplementation("androidx.compose.ui:ui-tooling")
+}`
+  },
+  {
+    name: "build.gradle.kts (project)",
+    path: "/ (root)",
+    desc: "Root-level Gradle config. Plugin versions and dependency management for the whole project.",
+    tag: "gradle",
+    icon: "icon-gradle",
+    emoji: "🏗️",
+    code: `// Top-level build file
+plugins {
+    alias(libs.plugins.android.application) apply false
+    alias(libs.plugins.kotlin.android) apply false
+    alias(libs.plugins.hilt) apply false
+}
+
+buildscript {
+    repositories {
+        google()
+        mavenCentral()
+    }
+    dependencies {
+        classpath("com.android.tools.build:gradle:8.2.1")
+        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:1.9.22")
+        classpath("com.google.dagger:hilt-android-gradle-plugin:2.50")
+    }
+}`
+  },
+  {
+    name: "settings.gradle.kts",
+    path: "/ (root)",
+    desc: "Gradle settings. Defines the project name and includes the :app module.",
+    tag: "gradle",
+    icon: "icon-gradle",
+    emoji: "📋",
+    code: `pluginManagement {
+    repositories {
+        google {
+            content {
+                includeGroupByRegex("com\\\\.android.*")
+                includeGroupByRegex("com\\\\.google.*")
+                includeGroupByRegex("androidx.*")
+            }
+        }
+        mavenCentral()
+        gradlePluginPortal()
+    }
+}
+
+dependencyResolutionManagement {
+    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+    repositories {
+        google()
+        mavenCentral()
+    }
+}
+
+rootProject.name = "SmartFraudDetector"
+include(":app")`
+  },
+  {
+    name: "proguard-rules.pro",
+    path: "app/",
+    desc: "ProGuard/R8 rules. Keeps TFLite, SQLCipher, Hilt, and Room classes from being stripped in release builds.",
+    tag: "pro",
+    icon: "icon-pro",
+    emoji: "🛡️",
+    code: `# TensorFlow Lite
+-keep class org.tensorflow.** { *; }
+-keep class org.tensorflow.lite.** { *; }
+-dontwarn org.tensorflow.**
+
+# SQLCipher
+-keep class net.sqlcipher.** { *; }
+-dontwarn net.sqlcipher.**
+
+# Hilt
+-keep class dagger.hilt.** { *; }
+-keep @dagger.hilt.android.AndroidEntryPoint class * { *; }
+-dontwarn dagger.hilt.**
+
+# Room
+-keep class androidx.room.** { *; }
+-keep @androidx.room.Entity class * { *; }
+-keepclassmembers @androidx.room.Entity class * { *; }
+
+# Kotlin coroutines
+-keepclassmembers class kotlinx.coroutines.** { *; }
+-dontwarn kotlinx.coroutines.**
+
+# App data classes
+-keep class com.fraud_detector.models.** { *; }
+
+# General
+-keepattributes Signature
+-keepattributes *Annotation*`
+  }
+];
+
+const assetFiles = [
+  {
+    name: "AndroidManifest.xml",
+    path: "app/src/main/",
+    desc: "App manifest. Declares permissions, the SmsReceiver, MainActivity, and notification channels.",
+    tag: "xml",
+    icon: "icon-xml",
+    emoji: "📄",
+    code: `<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.fraud_detector">
+
+    <!-- Permissions -->
+    <uses-permission android:name="android.permission.READ_SMS" />
+    <uses-permission android:name="android.permission.RECEIVE_SMS" />
+    <uses-permission android:name="android.permission.READ_CALL_LOG" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+
+    <application
+        android:name=".FraudDetectorApp"
+        android:allowBackup="false"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.FraudDetector">
+
+        <activity
+            android:name=".MainActivity"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <receiver
+            android:name=".receivers.SmsReceiver"
+            android:enabled="true"
+            android:exported="true"
+            android:permission="android.permission.BROADCAST_SMS">
+            <intent-filter android:priority="999">
+                <action android:name="android.provider.Telephony.SMS_RECEIVED" />
+            </intent-filter>
+        </receiver>
+
+        <receiver
+            android:name=".receivers.CallReceiver"
+            android:enabled="true"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.intent.action.PHONE_STATE" />
+            </intent-filter>
+        </receiver>
+
+    </application>
+</manifest>`
+  },
+  {
+    name: "threat_database.json",
+    path: "app/src/main/assets/",
+    desc: "Keyword vocabulary for rule-based scoring. Covers phishing, spam, OTP, finance, and lottery patterns.",
+    tag: "json",
+    icon: "icon-json",
+    emoji: "🗂️",
+    code: `{
+  "phishing_keywords": [
+    "verify", "confirm", "update", "validate", "authenticate",
+    "account", "password", "credentials", "access", "login",
+    "suspended", "locked", "blocked", "expired", "urgent",
+    "immediate", "action required", "click here", "link below"
+  ],
+  "spam_keywords": [
+    "congratulations", "won", "claim", "prize", "discount",
+    "offer", "limited time", "hurry", "exclusive", "free",
+    "gift", "reward", "selected", "lucky", "special deal"
+  ],
+  "otp_keywords": [
+    "otp", "code", "verification", "password", "pin",
+    "secure", "confirm", "enter", "authentication", "one-time"
+  ],
+  "finance_keywords": [
+    "bank", "account", "payment", "transfer", "credit",
+    "debit", "card", "loan", "transaction", "balance",
+    "kyc", "aadhaar", "pan", "upi", "neft", "rtgs"
+  ],
+  "lottery_keywords": [
+    "lottery", "winner", "prize", "jackpot", "raffle",
+    "congratulations", "selected", "fortune", "reward",
+    "draw", "cash prize", "bumper", "mega prize"
+  ],
+  "urgency_keywords": [
+    "immediately", "within 24 hours", "expires today",
+    "last chance", "act now", "do not ignore", "final notice"
+  ]
+}`
+  },
+  {
+    name: "malicious_domains.json",
+    path: "app/src/main/assets/",
+    desc: "Blocklist of known phishing and malware domains for URL analysis.",
+    tag: "json",
+    icon: "icon-json",
+    emoji: "🚫",
+    code: `{
+  "domains": [
+    "phishing-link.com",
+    "malware.net",
+    "scam-site.org",
+    "fake-bank.com",
+    "credential-stealer.net",
+    "spoofed-google.com",
+    "amazon-phish.org",
+    "paypal-verify.xyz",
+    "sbi-update.tk",
+    "hdfc-kyc.ml",
+    "icici-secure.ga",
+    "ubi-login.cf",
+    "axis-bank-verify.gq",
+    "offers-free.in",
+    "prize-claim.co.in",
+    "gov-scheme.xyz",
+    "pm-relief.tk",
+    "covid-relief-fund.ml"
+  ],
+  "tld_risk": {
+    "high": [".tk", ".ml", ".ga", ".cf", ".gq", ".xyz", ".top", ".loan"],
+    "medium": [".info", ".biz", ".click", ".link"]
+  }
+}`
+  }
+];
+
+// ─── RENDER ───────────────────────────────────────────────────────────────────
+
+let currentCode = '';
+let currentFileName = '';
+
+function renderCards(files, containerId) {
+  const grid = document.getElementById(containerId);
+  files.forEach((f, i) => {
+    const card = document.createElement('div');
+    card.className = 'file-card';
+    card.style.animationDelay = `${i * 0.07}s`;
+    card.innerHTML = `
+      <div class="card-top">
+        <div class="file-icon ${f.icon}">${f.emoji}</div>
+        <div>
+          <div class="file-name">${f.name}</div>
+          <div class="file-path">${f.path}</div>
+        </div>
+      </div>
+      <div class="file-desc">${f.desc}</div>
+      <div class="card-footer">
+        <span class="file-tag tag-${f.tag}">.${f.tag}</span>
+        <button class="copy-btn" onclick='openModal(${JSON.stringify(f.name)}, ${JSON.stringify(f.code)})'>⚡ View & Copy</button>
+      </div>
+    `;
+    grid.appendChild(card);
+  });
+}
+
+renderCards(kotlinFiles, 'kotlin-grid');
+renderCards(configFiles, 'config-grid');
+renderCards(assetFiles, 'asset-grid');
+
+// ─── MODAL ────────────────────────────────────────────────────────────────────
+
+function openModal(name, code) {
+  currentCode = code;
+  currentFileName = name;
+  document.getElementById('modal-title').textContent = name;
+  document.getElementById('modal-code').textContent = code;
+  document.getElementById('modal').classList.add('open');
+  document.getElementById('modal-copy-btn').textContent = '⎘ Copy';
+  document.getElementById('modal-copy-btn').className = 'copy-btn';
+}
+
+function closeModal(e) {
+  if (e.target === document.getElementById('modal')) {
+    document.getElementById('modal').classList.remove('open');
+  }
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') document.getElementById('modal').classList.remove('open');
+});
+
+async function copyModalCode() {
+  await navigator.clipboard.writeText(currentCode);
+  const btn = document.getElementById('modal-copy-btn');
+  btn.textContent = '✓ Copied!';
+  btn.className = 'copy-btn copied';
+  setTimeout(() => {
+    btn.textContent = '⎘ Copy';
+    btn.className = 'copy-btn';
+  }, 2000);
+}
+
+function downloadCurrent() {
+  const blob = new Blob([currentCode], { type: 'text/plain' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = currentFileName.replace(/\s*\(.*\)/, '').trim();
+  a.click();
+}
+
+// ─── DOWNLOAD ALL ─────────────────────────────────────────────────────────────
+
+function downloadAll() {
+  const allFiles = [...kotlinFiles, ...configFiles, ...assetFiles];
+  allFiles.forEach((f, i) => {
+    setTimeout(() => {
+      const blob = new Blob([f.code], { type: 'text/plain' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = f.name.replace(/\s*\(.*\)/, '').trim();
+      a.click();
+    }, i * 300);
+  });
+}
+
+async function copyStructure() {
+  const structure = `SmartFraudDetector/
+├── app/
+│   ├── src/main/
+│   │   ├── AndroidManifest.xml
+│   │   ├── assets/
+│   │   │   ├── models/
+│   │   │   │   ├── sms_classifier.tflite
+│   │   │   │   ├── call_fraud_detector.tflite
+│   │   │   │   └── url_embedding_model.tflite
+│   │   │   ├── threat_database.json
+│   │   │   └── malicious_domains.json
+│   │   └── java/com/fraud_detector/
+│   │       ├── MainActivity.kt
+│   │       ├── detection/ThreatDetectionEngine.kt
+│   │       ├── ml/TFLiteModelManager.kt
+│   │       ├── database/AppDatabase.kt
+│   │       ├── models/ThreatModels.kt
+│   │       ├── receivers/SmsReceiver.kt
+│   │       ├── ui/DashboardScreen.kt
+│   │       └── di/AppModule.kt
+│   ├── build.gradle.kts
+│   └── proguard-rules.pro
+├── build.gradle.kts
+└── settings.gradle.kts`;
+  await navigator.clipboard.writeText(structure);
+  const btn = document.querySelector('.btn-secondary');
+  const orig = btn.textContent;
+  btn.textContent = '✓ Copied!';
+  setTimeout(() => btn.textContent = orig, 2000);
+}
+</script>
+</body>
+</html>
+`

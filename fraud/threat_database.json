@@ -1,0 +1,31 @@
+{
+  "phishing_keywords": [
+    "verify", "confirm", "update", "validate", "authenticate",
+    "account", "password", "credentials", "access", "login",
+    "suspended", "locked", "blocked", "expired", "urgent",
+    "immediate", "action required", "click here", "link below"
+  ],
+  "spam_keywords": [
+    "congratulations", "won", "claim", "prize", "discount",
+    "offer", "limited time", "hurry", "exclusive", "free",
+    "gift", "reward", "selected", "lucky", "special deal"
+  ],
+  "otp_keywords": [
+    "otp", "code", "verification", "password", "pin",
+    "secure", "confirm", "enter", "authentication", "one-time"
+  ],
+  "finance_keywords": [
+    "bank", "account", "payment", "transfer", "credit",
+    "debit", "card", "loan", "transaction", "balance",
+    "kyc", "aadhaar", "pan", "upi", "neft", "rtgs"
+  ],
+  "lottery_keywords": [
+    "lottery", "winner", "prize", "jackpot", "raffle",
+    "congratulations", "selected", "fortune", "reward",
+    "draw", "cash prize", "bumper", "mega prize"
+  ],
+  "urgency_keywords": [
+    "immediately", "within 24 hours", "expires today",
+    "last chance", "act now", "do not ignore", "final notice"
+  ]
+}

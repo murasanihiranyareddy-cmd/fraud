@@ -1,0 +1,26 @@
+{
+  "domains": [
+    "phishing-link.com",
+    "malware.net",
+    "scam-site.org",
+    "fake-bank.com",
+    "credential-stealer.net",
+    "spoofed-google.com",
+    "amazon-phish.org",
+    "paypal-verify.xyz",
+    "sbi-update.tk",
+    "hdfc-kyc.ml",
+    "icici-secure.ga",
+    "ubi-login.cf",
+    "axis-bank-verify.gq",
+    "offers-free.in",
+    "prize-claim.co.in",
+    "gov-scheme.xyz",
+    "pm-relief.tk",
+    "covid-relief-fund.ml"
+  ],
+  "tld_risk": {
+    "high": [".tk", ".ml", ".ga", ".cf", ".gq", ".xyz", ".top", ".loan"],
+    "medium": [".info", ".biz", ".click", ".link"]
+  }
+}
